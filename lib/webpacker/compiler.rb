@@ -64,6 +64,33 @@ class Webpacker::Compiler
         chdir: File.expand_path(config.root_path)
       )
 
+      logger.info "Status: #{status}"
+      logger.info "stdout: #{stdout}"
+      logger.info "stderr: #{stderr}"
+
+      if status.success?
+        logger.info "Compiled all packs in #{config.public_output_path}"
+        logger.error "#{stderr}" unless stderr.empty?
+      else
+        logger.error "Compilation failed:\n#{stderr}"
+      end
+
+      if config.webpack_compile_output?
+        logger.info stdout
+      end
+
+      status.success?
+    end
+
+    def run_webpack_orig
+      logger.info "Compiling…"
+
+      stdout, stderr, status = Open3.capture3(
+        webpack_env,
+        "#{RbConfig.ruby} ./bin/webpack",
+        chdir: File.expand_path(config.root_path)
+      )
+
       if status.success?
         logger.info "Compiled all packs in #{config.public_output_path}"
         logger.error "#{stderr}" unless stderr.empty?
